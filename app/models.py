@@ -1,6 +1,9 @@
 from . import db
-from werkzeug.security import generate_password_hash,check_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+
+from . import login_manager
+
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -12,7 +15,7 @@ class Role(db.Model):
         return '<Role %r>' % self.name
 
 
-class User(UserMixin,db.Model):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, index=True)
@@ -26,18 +29,22 @@ class User(UserMixin,db.Model):
         raise AttributeError('还是不要看人密码了吧！！！')
 
     @password.setter
-    def password(self,password):
+    def password(self, password):
         self.password = generate_password_hash(password)
 
-    def verify_password(self,password):
-        return check_password_hash(self.password_hash,password)
+    def verify_password(self, password):
+        return check_password_hash(self.password_hash, password)
 
     # 《《===密码相关
 
-
-    # user Login 相关 ===》》
 
 
 
     def __repr__(self):
         return '<User %r>' % self.username
+
+
+# 使用flask-login需要实现的回调方法
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
