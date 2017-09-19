@@ -21,8 +21,10 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), unique=True, index=True)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
+    email = db.Column(db.String(64),unique=True,index=True)
+
     # 密码相关===》》
-    password_hash = db.Column(db.String)
+    password_hash = db.Column(db.String(128))
 
     @property
     def password(self):
@@ -30,7 +32,7 @@ class User(UserMixin, db.Model):
 
     @password.setter
     def password(self, password):
-        self.password = generate_password_hash(password)
+        self.password_hash = generate_password_hash(password)
 
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
