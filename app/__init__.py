@@ -12,6 +12,9 @@ moment = Moment()
 db = SQLAlchemy()
 login_manager = LoginManager()
 
+# 自定义访问未授权资源时的闪现消息
+login_manager.login_message = "请先登录！"
+
 login_manager.session_protection = 'strong'
 login_manager.login_view = 'auth.login'
 
