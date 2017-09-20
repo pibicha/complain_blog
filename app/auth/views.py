@@ -1,7 +1,7 @@
 from flask import render_template, redirect, request, url_for, flash
 from flask.ext.login import login_user, login_required, logout_user, current_user
 from . import auth
-from .forms import LoginForm, RegistrationForm, ChangePasswordForm
+from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm
 from ..models import User
 from .. import db
 from ..email import send_email
@@ -100,3 +100,33 @@ def change_password():
         else:
             flash('无效的密码.')
     return render_template("auth/change_password.html", form=form)
+
+
+# 更新邮箱：先发起更新请求，生成token，发送邮件给请求的用户
+@auth.route('/change_email', methods=['GET', 'POST'])
+@login_required
+def change_email_request():
+    form = ChangeEmailForm()
+    if form.validate_on_submit():
+        if current_user.verify_password(form.password.data):
+            new_email = form.email.data
+            token = current_user.generate_email_change_token(new_email)
+            send_email(new_email, '更新账户邮箱',
+                       'auth/email/change_email',
+                       user=current_user, token=token)
+            flash('一封新的验证邮件已发送到你的新邮箱，请查收.')
+            return redirect(url_for('main.index'))
+        else:
+            flash('无效的地址或密码')
+    return render_template("auth/change_email.html", form=form)
+
+
+# 将通过邮件中的链接重置邮箱
+@auth.route('/change_email/<token>')
+@login_required
+def change_email(token):
+    if current_user.change_email(token):
+        flash('Your email address has been updated.')
+    else:
+        flash('Invalid request.')
+    return redirect(url_for('main.index'))

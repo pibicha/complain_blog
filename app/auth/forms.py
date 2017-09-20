@@ -39,3 +39,14 @@ class ChangePasswordForm(Form):
         Required(), EqualTo('password2', message='两次输入的密码不匹配')])
     password2 = PasswordField('确认新密码', validators=[Required()])
     submit = SubmitField('更新密码')
+
+# 更新邮箱
+class ChangeEmailForm(Form):
+    email = StringField('新的邮箱地址', validators=[Required(), Length(1, 64),
+                                                 Email()])
+    password = PasswordField('密码', validators=[Required()])
+    submit = SubmitField('更新邮箱地址')
+
+    def validate_email(self, field):
+        if User.query.filter_by(email=field.data).first():
+            raise ValidationError('该邮箱已经被使用了!')

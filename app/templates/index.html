@@ -2,11 +2,13 @@
 {% import "bootstrap/wtf.html" as wtf %}
 
 {% block page_content %}
-<div class="page-header">
-    {% if current_user.is_authenticated %}
-        <h1>{{ current_user.username }}</h1>
-    {% else %}
-        <h1> 你好陌生人 </h1>
-    {% endif %}
-</div>
+    <div class="page-header">
+        {% if current_user.is_authenticated %}
+            <h1>你好 {{ current_user.username }}</h1>
+        {% else %}
+            <h1> 你好陌生人 </h1>
+        {% endif %}
+    </div>
+    <br>
+    <p>正在建设中...</p>
 {% endblock %}
