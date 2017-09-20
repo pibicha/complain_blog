@@ -31,3 +31,11 @@ class RegistrationForm(Form):
     def validate_username(self,field):
         if User.query.filter_by(username=field.data).first():
             raise ValidationError('用户名已经被使用.')
+
+# 修改密码
+class ChangePasswordForm(Form):
+    old_password = PasswordField('原密码', validators=[Required()])
+    password = PasswordField('新密码', validators=[
+        Required(), EqualTo('password2', message='两次输入的密码不匹配')])
+    password2 = PasswordField('确认新密码', validators=[Required()])
+    submit = SubmitField('更新密码')

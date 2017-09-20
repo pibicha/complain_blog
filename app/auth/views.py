@@ -1,7 +1,7 @@
 from flask import render_template, redirect, request, url_for, flash
 from flask.ext.login import login_user, login_required, logout_user, current_user
 from . import auth
-from .forms import LoginForm, RegistrationForm
+from .forms import LoginForm, RegistrationForm, ChangePasswordForm
 from ..models import User
 from .. import db
 from ..email import send_email
@@ -40,9 +40,20 @@ def register():
         token = user.generate_confirmation_token()
         send_email(user.email, '请确认你的账户', 'auth/email/confirm', user=user,
                    token=token)
-        flash("请确认你的邮箱")
+        flash('注册验证邮件已发送，请查收')
         return redirect(url_for('main.index'))
     return render_template('auth/register.html', form=form)
+
+
+# 重新获取验证邮件
+@auth.route('/confirm')
+@login_required
+def resend_confirmation():
+    token = current_user.generate_confirmation_token()
+    send_email(current_user.email, '请确认你的账户',
+               'auth/email/confirm', user=current_user, token=token)
+    flash('注册验证邮件已发送，请查收')
+    return redirect(url_for('main.index'))
 
 
 # 确认注册
@@ -64,12 +75,28 @@ def before_request():
     if current_user.is_authenticated \
             and not current_user.confirmed \
             and request.endpoint[:5] != 'auth.' \
-            and request.endpoint() != 'static':
+            and request.endpoint != 'static':
         return redirect(url_for("auth.uncofirmed"))
 
 
 @auth.route("/unconfirmed")
 def uncofirmed():
-    if current_user.is_anonymous() or current_user.confirmed:
+    if current_user.is_anonymous or current_user.confirmed:
         return redirect(url_for("main.index"))
     return render_template("auth/uncofirmed.html")
+
+
+# 修改密码
+@auth.route('/change_password', methods=['GET', 'POST'])
+@login_required
+def change_password():
+    form = ChangePasswordForm()
+    if form.validate_on_submit():
+        if current_user.verify_password(form.old_password.data):
+            current_user.password = form.password.data
+            db.session.add(current_user)
+            flash('你的密码已经更新~')
+            return redirect(url_for('main.index'))
+        else:
+            flash('无效的密码.')
+    return render_template("auth/change_password.html", form=form)

@@ -1,5 +1,13 @@
 {% extends "base.html" %}
-
 {% block page_content %}
- 你还不是正式用户~~~ 请先去注册，若已完成注册请确认{{ current_user.email }}中的邮件
+<div class="page-header">
+    <h1>
+        你好~, {{ current_user.username }}!
+    </h1>
+    <h3>你还没有验证账户~.~</h3>
+    <p>
+        没收到邮件?
+        <a href="{{ url_for('auth.resend_confirmation') }}">重新获取</a>
+    </p>
+</div>
 {% endblock %}
