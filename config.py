@@ -14,7 +14,8 @@ class Config:
     # flask-mail相关设置，详见https://pythonhosted.org/Flask-Mail/
     MAIL_SERVER = 'smtp.163.com'
     MAIL_PORT = 465
-    MAIL_USE_TLS = True
+    MAIL_USE_SSL = True
+    #MAIL_USE_TLS = True 163支持
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
 
@@ -36,7 +37,6 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-
 
 config = {
     'development': Dev,
