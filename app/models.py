@@ -8,12 +8,15 @@ from flask import current_app
 from . import login_manager
 from datetime import datetime
 
+# 中间表不需要继承db.Model
+users_roles = db.Table('users_roles',
+    db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+    db.Column('role_id', db.Integer, db.ForeignKey('roles.id')))
 
 class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), unique=True)
-    users = db.relationship('User', backref='role', lazy='dynamic')
 
     def __repr__(self):
         return '<Role %r>' % self.name
@@ -23,7 +26,12 @@ class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, index=True)
-    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+
+    # 中间表映射关系
+    roles = db.relationship(
+        'Role',
+        secondary=users_roles,
+        backref=db.backref('users', lazy='dynamic'))
 
     email = db.Column(db.String(64), unique=True, index=True)
 

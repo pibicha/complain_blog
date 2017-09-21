@@ -1,10 +1,13 @@
-from flask import render_template, redirect, request, url_for, flash
-from flask.ext.login import login_user, login_required, logout_user, current_user
+from flask import render_template, redirect, request, url_for, flash, current_app, session
+from flask_login import login_user, login_required, logout_user, current_user
 from . import auth
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm
 from ..models import User
 from .. import db
 from ..email import send_email
+
+from flask.ext.principal import Principal, Identity, AnonymousIdentity, \
+    identity_changed
 
 
 @auth.route("/login", methods=['GET', 'POST'])
@@ -14,6 +17,9 @@ def login():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
             login_user(user, form.remember_me.data)
+            # Tell Flask-Principal the identity changed
+            identity_changed.send(current_app._get_current_object(),
+                                  identity=Identity(user.id))
             return redirect(request.args.get('next') or url_for('main.index'))
         flash('无效的用户名或密码')
 
@@ -24,6 +30,15 @@ def login():
 @login_required
 def logout():
     logout_user()
+
+    # Remove session keys set by Flask-Principal
+    for key in ('identity.name', 'identity.auth_type'):
+        session.pop(key, None)
+
+    # Tell Flask-Principal the user is anonymous
+    identity_changed.send(current_app._get_current_object(),
+                          identity=AnonymousIdentity())
+
     flash("你已经退出登陆")
     return redirect(url_for("main.index"))
 
