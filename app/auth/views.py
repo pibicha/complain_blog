@@ -72,11 +72,12 @@ def confirm(token):
 # 每次请求前检查登录状态和是否已经确认注册邮件
 @auth.before_app_request
 def before_request():
-    if current_user.is_authenticated \
-            and not current_user.confirmed \
-            and request.endpoint[:5] != 'auth.' \
-            and request.endpoint != 'static':
-        return redirect(url_for("auth.uncofirmed"))
+    if current_user.is_authenticated:
+        current_user.ping()
+        if current_user.confirmed \
+                and request.endpoint[:5] != 'auth.' \
+                and request.endpoint != 'static':
+            return redirect(url_for("auth.uncofirmed"))
 
 
 @auth.route("/unconfirmed")
