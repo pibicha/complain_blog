@@ -3,11 +3,11 @@ from flask_login import login_user, login_required, logout_user, current_user
 from . import auth
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm
 from ..models import User
-from .. import db
+from .. import db,admin_permission
 from ..email import send_email
 
-from flask.ext.principal import Principal, Identity, AnonymousIdentity, \
-    identity_changed
+from flask_principal import Principal, Identity, AnonymousIdentity, \
+    identity_changed,IdentityContext
 
 
 @auth.route("/login", methods=['GET', 'POST'])
@@ -145,3 +145,9 @@ def change_email(token):
     else:
         flash('Invalid request.')
     return redirect(url_for('main.index'))
+
+#上下文处理,可以在jinja2判断是否有执行权限
+@auth.app_context_processor
+def context():
+    admin = IdentityContext(admin_permission)
+    return dict(admin=admin)

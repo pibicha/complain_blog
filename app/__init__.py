@@ -20,7 +20,7 @@ principals = Principal()
 # Create a permission with a single Need, in this case a RoleNeed.
 user_permission = Permission(RoleNeed('user'))
 moderator_permission = Permission(RoleNeed('moderate'))
-amdin_permission = Permission(RoleNeed('admin'))
+admin_permission = Permission(RoleNeed('admin'))
 
 # 自定义访问未授权资源时的闪现消息
 login_manager.login_message = "请先登录！"
