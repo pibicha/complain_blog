@@ -1,11 +1,11 @@
-from flask.ext.wtf import Form
+from flask.ext.wtf import FlaskForm
 from wtforms import StringField, PasswordField, BooleanField, SubmitField
 from wtforms.validators import Required, Length, Email, Regexp,EqualTo
 from wtforms import ValidationError
 from ..models import User
 
 
-class LoginForm(Form):
+class LoginForm(FlaskForm):
     email = StringField('邮箱', validators=[Required("必填项"), Length(1, 64),
                                           Email()])
     password = PasswordField('密码', validators=[Required("必填项")])
@@ -13,7 +13,7 @@ class LoginForm(Form):
     submit = SubmitField('登陆')
 
 
-class RegistrationForm(Form):
+class RegistrationForm(FlaskForm):
     email = StringField("邮箱", validators=[Required("必填项"), Length(1, 64),
                                           Email()])
     username = StringField("用户名", validators=[Required("必填项"), Length(1, 64),
@@ -33,7 +33,7 @@ class RegistrationForm(Form):
             raise ValidationError('用户名已经被使用.')
 
 # 修改密码
-class ChangePasswordForm(Form):
+class ChangePasswordForm(FlaskForm):
     old_password = PasswordField('原密码', validators=[Required("必填项")])
     password = PasswordField('新密码', validators=[
         Required("必填项"), EqualTo('password2', message='两次输入的密码不匹配')])
@@ -41,7 +41,7 @@ class ChangePasswordForm(Form):
     submit = SubmitField('更新密码')
 
 # 更新邮箱
-class ChangeEmailForm(Form):
+class ChangeEmailForm(FlaskForm):
     email = StringField('新的邮箱地址', validators=[Required("必填项"), Length(1, 64),
                                                  Email()])
     password = PasswordField('密码', validators=[Required("必填项")])

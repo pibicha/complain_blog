@@ -16,6 +16,15 @@ users_roles = db.Table('users_roles',
                        db.Column('role_id', db.Integer, db.ForeignKey('roles.id')))
 
 
+# 文章
+class Post(db.Model):
+    __tablename__ = 'posts'
+    id = db.Column(db.Integer, primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    author_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+
 class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True)
@@ -27,6 +36,10 @@ class Role(db.Model):
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
+
+    # 一对多
+    posts = db.relationship('Post', backref='author', lazy='dynamic')
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, index=True)
 

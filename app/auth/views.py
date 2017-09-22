@@ -3,7 +3,7 @@ from flask_login import login_user, login_required, logout_user, current_user
 from . import auth
 from .forms import LoginForm, RegistrationForm, ChangePasswordForm, ChangeEmailForm
 from ..models import User
-from .. import db,admin_permission
+from .. import db,admin_permission,user_permission
 from ..email import send_email
 
 from flask_principal import Principal, Identity, AnonymousIdentity, \
@@ -150,4 +150,5 @@ def change_email(token):
 @auth.app_context_processor
 def context():
     admin = IdentityContext(admin_permission)
-    return dict(admin=admin)
+    user = IdentityContext(user_permission)
+    return dict(admin=admin,user=user)
