@@ -2,29 +2,31 @@
 
 {% block page_content %}
     <div class="page-header">
-        <h1>{{ user.username }}</h1>
-        {% if user.name %}
-            <p>
-                {% if user.name %}{{ user.name }}{% endif %}
-            </p>
-        {% endif %}
-        {% if admin.can() %}
-            <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
-        {% endif %}
-        {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
-        <p>
-            注册时间 {{ moment(user.member_since).format('LLL') }}.
-            上次登录时间 {{ moment(user.last_seen).fromNow() }}.
-            <br>
-            {% if admin.can() %}
-                <a class="btn btn-danger" href="{{ url_for('main.edit_profile_admin',id=user.id) }}">
-                    编辑个人资料
-                </a>
-            {% elif user == current_user %}
-                <a class="btn btn-default" href="{{ url_for('main.edit_profile') }}">
-                    编辑个人资料
-                </a>
+        <img class="img-rounded profile-thumbnail" src="{{ user.gravatar(size=256) }}">
+        <div class="page-header">
+            {% if user.name %}
+                <p>
+                    {% if user.name %}{{ user.name }}{% endif %}
+                </p>
             {% endif %}
-        </p>
+            {% if admin.can() %}
+                <p><a href="mailto:{{ user.email }}">{{ user.email }}</a></p>
+            {% endif %}
+            {% if user.about_me %}<p>{{ user.about_me }}</p>{% endif %}
+            <p>
+                注册时间 {{ moment(user.member_since).format('LLL') }}.
+                上次登录时间 {{ moment(user.last_seen).fromNow() }}.
+                <br>
+                {% if admin.can() %}
+                    <a class="btn btn-danger" href="{{ url_for('main.edit_profile_admin',id=user.id) }}">
+                        编辑个人资料
+                    </a>
+                {% elif user == current_user %}
+                    <a class="btn btn-default" href="{{ url_for('main.edit_profile') }}">
+                        编辑个人资料
+                    </a>
+                {% endif %}
+            </p>
+        </div>
     </div>
 {% endblock %}

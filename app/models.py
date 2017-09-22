@@ -3,15 +3,18 @@ from . import db
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from flask import current_app
+from flask import current_app, request
 
 from . import login_manager
 from datetime import datetime
 
+import hashlib
+
 # 中间表不需要继承db.Model
 users_roles = db.Table('users_roles',
-    db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
-    db.Column('role_id', db.Integer, db.ForeignKey('roles.id')))
+                       db.Column('user_id', db.Integer, db.ForeignKey('users.id')),
+                       db.Column('role_id', db.Integer, db.ForeignKey('roles.id')))
+
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -41,6 +44,14 @@ class User(UserMixin, db.Model):
     about_me = db.Column(db.Text())
     member_since = db.Column(db.DateTime(), default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
+
+    # 缓存gravatar的hash值
+    avatar_hash = db.Column(db.String(32))
+
+    def __init__(self, **kwargs):
+        super(User, self).__init__(**kwargs)
+        if self.email is not None and self.avatar_hash is None:
+            self.avatar_hash = hashlib.md5(self.email.encode('utf-8')).hexdigest()
 
     # 记录用户最近一次登录时间
     def ping(self):
@@ -101,8 +112,19 @@ class User(UserMixin, db.Model):
         if self.query.filter_by(email=new_email).first() is not None:
             return False
         self.email = new_email
+        self.avatar_hash = hashlib.md5(self.email.encode('utf-8')).hexdigest()
         db.session.add(self)
         return True
+
+    # 生成用户头像
+    def gravatar(self, size=100, default='identicon', rating='g'):
+        if request.is_secure:
+            url = 'https://secure.gravatar.com/avatar'
+        else:
+            url = 'http://www.gravatar.com/avatar'
+        hash = hashlib.md5(self.email.encode('utf-8')).hexdigest()
+        return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
+            url=url, hash=hash, size=size, default=default, rating=rating)
 
     def __repr__(self):
         return '<User %r>' % self.username
