@@ -16,10 +16,14 @@
             注册时间 {{ moment(user.member_since).format('LLL') }}.
             上次登录时间 {{ moment(user.last_seen).fromNow() }}.
             <br>
-            {% if user == current_user %}
-            <a class="btn btn-default" href="{{ url_for('main.edit_profile') }}">
-                编辑个人资料
-            </a>
+            {% if admin.can() %}
+                <a class="btn btn-danger" href="{{ url_for('main.edit_profile_admin',id=user.id) }}">
+                    编辑个人资料
+                </a>
+            {% elif user == current_user %}
+                <a class="btn btn-default" href="{{ url_for('main.edit_profile') }}">
+                    编辑个人资料
+                </a>
             {% endif %}
         </p>
     </div>
