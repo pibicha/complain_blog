@@ -27,14 +27,15 @@ class Post(db.Model):
     # 生成假数据
     def generate_fake(count=100):
         from random import seed, randint
-        import forgery_py
-
+        #import forgery_py
+        from faker import Faker
+        fake = Faker("zh_CN")
         seed()
         user_count = User.query.count()
         for i in range(count):
             u = User.query.offset(randint(0, user_count - 1)).first()
-            p = Post(body=forgery_py.lorem_ipsum.sentenceΩ(randint(1, 3)),
-                     timestamp=forgery_py.date.date(True),
+            p = Post(body=fake.sentences(nb=3),
+                     timestamp=fake.date_time(tzinfo=None),
                      author=u)
             db.session.add(p)
             db.session.commit()
@@ -159,17 +160,27 @@ class User(UserMixin, db.Model):
     def generate_fake(count=100):
         from sqlalchemy.exc import IntegrityError
         from random import seed
-        import forgery_py
+        #import forgery_py
+        from faker import Faker
+        fake = Faker("zh_CN")
         seed()
         for i in range(count):
-            u = User(email=forgery_py.internet.email_address(),
-                     username=forgery_py.internet.user_name(True),
-                     password=forgery_py.lorem_ipsum.word(),
+            # u = User(email=forgery_py.internet.email_address(),
+            #          username=forgery_py.internet.user_name(True),
+            #          password=forgery_py.lorem_ipsum.word(),
+            #          confirmed=True,
+            #          name=forgery_py.name.full_name(),
+            #          location=forgery_py.address.city(),
+            #          about_me=forgery_py.lorem_ipsum.sentence(),
+            #          member_since=forgery_py.date.date(True))
+            u = User(email=fake.email(),
+                     username=fake.user_name(),
+                     password=fake.password(length=10, special_chars=True, digits=True, upper_case=True, lower_case=True),
                      confirmed=True,
-                     name=forgery_py.name.full_name(),
-                     location=forgery_py.address.city(),
-                     about_me=forgery_py.lorem_ipsum.sentence(),
-                     member_since=forgery_py.date.date(True))
+                     name=fake.name(),
+                     location=fake.city(),
+                     about_me=fake.sentence(nb_words=6, variable_nb_words=True),
+                     member_since=fake.date_time(tzinfo=None))
             db.session.add(u)
             try:
                 db.session.commit()
