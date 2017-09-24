@@ -18,6 +18,8 @@ class Config:
     #MAIL_USE_TLS = True 163支持
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    # 博客分页——每页datasize
+    POSTS_PER_PAGE = 20
 
     # 由子类实现，类似java的模板方法，可以对app进行扩展
     @staticmethod
