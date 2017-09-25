@@ -5,6 +5,8 @@ from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from flask import current_app, request
 
+from flask_misaka import markdown
+
 from . import login_manager
 from datetime import datetime
 
@@ -27,7 +29,7 @@ class Post(db.Model):
     # 生成假数据
     def generate_fake(count=100):
         from random import seed, randint
-        #import forgery_py
+        # import forgery_py
         from faker import Faker
         fake = Faker("zh_CN")
         seed()
@@ -39,6 +41,16 @@ class Post(db.Model):
                      author=u)
             db.session.add(p)
             db.session.commit()
+
+    # 为了避免一页中渲染20条Post，设计一个字段专门保存body的html内容
+    body_html = db.Column(db.Text)
+
+    @staticmethod
+    def on_changed_body(target, value, oldvalue, initiator):
+        target.body_html = markdown(value)
+
+
+db.event.listen(Post.body, 'set', Post.on_changed_body)
 
 
 class Role(db.Model):
@@ -160,7 +172,7 @@ class User(UserMixin, db.Model):
     def generate_fake(count=100):
         from sqlalchemy.exc import IntegrityError
         from random import seed
-        #import forgery_py
+        # import forgery_py
         from faker import Faker
         fake = Faker("zh_CN")
         seed()
@@ -175,7 +187,8 @@ class User(UserMixin, db.Model):
             #          member_since=forgery_py.date.date(True))
             u = User(email=fake.email(),
                      username=fake.user_name(),
-                     password=fake.password(length=10, special_chars=True, digits=True, upper_case=True, lower_case=True),
+                     password=fake.password(length=10, special_chars=True, digits=True, upper_case=True,
+                                            lower_case=True),
                      confirmed=True,
                      name=fake.name(),
                      location=fake.city(),
