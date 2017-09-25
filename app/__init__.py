@@ -7,7 +7,12 @@ from flask_login import LoginManager
 from config import config
 
 from flask.ext.login import current_user
-from flask_principal import Principal, Permission, RoleNeed,identity_loaded,UserNeed
+from flask_principal import Principal, Permission, RoleNeed, identity_loaded, UserNeed
+
+# 使博客支持markdown语法
+from flask_pagedown import PageDown
+# 将数据库中markdown语法的文本渲染给前端
+from flask_misaka import Misaka
 
 bootstrap = Bootstrap()
 mail = Mail()
@@ -16,6 +21,8 @@ db = SQLAlchemy()
 login_manager = LoginManager()
 # 使用principal实现权限管理
 principals = Principal()
+pagedown = PageDown()
+misaka = Misaka()
 
 # Create a permission with a single Need, in this case a RoleNeed.
 user_permission = Permission(RoleNeed('user'))
@@ -40,6 +47,8 @@ def create_app(config_name):
     db.init_app(app)
     login_manager.init_app(app)
     principals.init_app(app)
+    pagedown.init_app(app)
+    misaka.init_app(app)
 
     # principle权限相关
     @identity_loaded.connect_via(app)
