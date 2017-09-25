@@ -62,20 +62,57 @@ class Role(db.Model):
         return '<Role %r>' % self.name
 
 
+# 关注——中间表
+class Follow(db.Model):
+    __tablename__ = 'follows'
+    follower_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                            primary_key=True)
+    followed_id = db.Column(db.Integer, db.ForeignKey('users.id'),
+                            primary_key=True)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
+
+    # 关注表自引用：
+    followed = db.relationship('Follow', foreign_keys=[Follow.follower_id],
+                               backref=db.backref('follower', lazy='joined'),
+                               lazy='dynamic', cascade='all,delete-orphan')
+    followers = db.relationship('Follow', foreign_keys=[Follow.followed_id],
+                                backref=db.backref('followed', lazy='joined'),
+                                lazy='dynamic', cascade='all,delete-orphan')
+    # 中间表映射关系
+    roles = db.relationship(
+        'Role',
+        secondary=users_roles,
+        backref=db.backref('users', lazy='dynamic'))
+
+    # 判断用户是不是他人的关注者
+    def is_following(self, user):
+        return self.followed.filter_by(followed_id=user.id).first() is not None
+
+    # 是否被别人关注
+    def is_follwed_by(self, user):
+        return self.followers.filter_by(follower_id=user.id) is not None
+
+    # 关注别人
+    def follow(self, user):
+        if not self.is_following(user):
+            f = Follow(follower=self, followed=user)
+            db.session.add(f)
+
+    # 取消关注
+    def unfollow(self, user):
+        f = self.followed.filter_by(follower_id=user.id).first()
+        if f:
+            db.session.delete(f)
 
     # 一对多
     posts = db.relationship('Post', backref='author', lazy='dynamic')
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True, index=True)
-
-    # 中间表映射关系
-    roles = db.relationship(
-        'Role',
-        secondary=users_roles,
-        backref=db.backref('users', lazy='dynamic'))
 
     email = db.Column(db.String(64), unique=True, index=True)
 

@@ -52,6 +52,7 @@ def register():
                     password=form.password.data)
         db.session.add(user)
         db.session.commit()
+        # 注册即赋予其普通用户的权限
         token = user.generate_confirmation_token()
         send_email(user.email, '请确认你的账户', 'auth/email/confirm', user=user,
                    token=token)
