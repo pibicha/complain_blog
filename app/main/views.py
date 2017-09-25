@@ -84,3 +84,27 @@ def edit_profile_admin(id):
     form.location.data = user.location
     form.about_me.data = user.about_me
     return render_template('edit_profile.html', form=form, user=user)
+
+
+# 文章分享
+@main.route("/post/<int:id>")
+def post(id):
+    post = Post.query.get_or_404(id)
+    return render_template('post.html', posts=[post])
+
+
+# 编辑文章
+@main.route("/edit/<int:id>", methods=['GET', 'POST'])
+@login_required
+def edit(id):
+    post = Post.query.get_or_404(id)
+    if not admin_permission.can() and current_user != post.author:
+        abort(403)
+    form = PostForm()
+    if form.validate_on_submit():
+        post.body = form.body.data
+        db.session.add(post)
+        flash("内容已更新！")
+        return redirect(url_for('main.post', id=post.id))
+    form.body.data = post.body
+    return render_template('edit_post.html', form=form)
