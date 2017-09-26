@@ -144,17 +144,38 @@ def unfollow(username):
     return redirect(url_for('.user', username=username))
 
 
+# 查看他人粉丝
 @main.route('/followers/<username>')
 def followers(username):
     user = User.query.filter_by(username=username).first()
     if user is None:
         flash("找不到{}哦！".format(username))
-    return redirect(url_for('.index'))
+        return redirect(url_for('.index'))
     page = request.args.get('page', 1, type=int)
     pagination = user.followers.paginate(
         page, per_page=current_app.config['PER_PAGE'],
         error_out=False)
     follows = [{'user': item.follower, 'timestamp': item.timestamp}
+               for item in pagination.items]
+    return render_template('followers.html', user=user, title="的关注者",
+                           endpoint='.followers', pagination=pagination,
+                           follows=follows)
+
+
+# 查看他关注的人
+@main.route('/followed_by/<username>')
+@login_required
+@user_permission.require()
+def followed_by(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash("找不到{}哦！".format(username))
+        return redirect(url_for('.index'))
+    page = request.args.get('page', 1, type=int)
+    pagination = user.followed.paginate(
+        page, per_page=current_app.config['PER_PAGE'],
+        error_out=False)
+    follows = [{'user': item.followed, 'timestamp': item.timestamp}
                for item in pagination.items]
     return render_template('followers.html', user=user, title="的关注者",
                            endpoint='.followers', pagination=pagination,

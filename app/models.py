@@ -108,6 +108,12 @@ class User(UserMixin, db.Model):
         if f:
             db.session.delete(f)
 
+    # 获取所关注用户的文章
+    @property
+    def followed_posts(self):
+        return Post.query.join(Follow, Follow.followed_id == Post.author_id) \
+            .filter(Follow.follower_id == self.id)
+
     # 一对多
     posts = db.relationship('Post', backref='author', lazy='dynamic')
 
