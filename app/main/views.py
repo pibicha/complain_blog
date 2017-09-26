@@ -1,4 +1,5 @@
-from flask import render_template, session, redirect, url_for, current_app, abort, flash
+from flask import render_template, session, redirect, url_for, \
+    current_app, abort, flash, make_response
 from .. import db
 from ..models import User, Role, Post
 from . import main
@@ -16,6 +17,18 @@ from flask_principal import Principal, Identity, AnonymousIdentity, \
 @main.route('/', methods=['GET', 'POST'])
 def index():
     form = PostForm()
+    page = request.args.get('page', 1, type=int)
+    show_followed = False
+    if current_user.is_authenticated:
+        show_followed = bool(request.cookies.get('show_followed', ''))
+    if show_followed:
+        query = current_user.followed_posts
+    else:
+        query = Post.query
+    pagination = query.order_by(Post.timestamp.desc()).paginate(
+        page, per_page=current_app.config['POSTS_PER_PAGE'],
+        error_out=False)
+    posts = pagination.items
     if form.validate_on_submit():
         # current_user是轻度封装，_get_current_object才是类似于user的对象
         user_permission = Permission(UserNeed(current_user._get_current_object().id))
@@ -24,11 +37,24 @@ def index():
                         author=current_user._get_current_object())
             db.session.add(post)
             return redirect(url_for('.index'))
-    page = request.args.get('page', 1, type=int)
+
     # posts = Post.query.order_by(Post.timestamp.desc()).all()
-    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(
-        page, per_page=current_app.config['POSTS_PER_PAGE'], error_out=False)
-    return render_template('index.html', form=form, posts=pagination.items, pagination=pagination)
+    return render_template('index.html', form=form, posts=posts, pagination=pagination, show_followed=show_followed)
+
+
+@main.route('/all')
+def show_all():
+    resp = make_response(redirect(url_for('main.index')))
+    resp.set_cookie('show_followed', '', max_age=30 * 24 * 60 * 60)
+    return resp
+
+
+@main.route('/followed')
+@login_required
+def show_followed():
+    resp = make_response(redirect(url_for('main.index')))
+    resp.set_cookie('show_followed', '1', max_age=30 * 24 * 60 * 60)
+    return resp
 
 
 @main.route("/user/<username>")
