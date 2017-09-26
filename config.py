@@ -42,7 +42,7 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     @classmethod
-    def init_app(app):
+    def init_app(cls,app):
         from werkzeug.contrib.fixers import ProxyFix
         app.wsgi_app = ProxyFix(app.wsgi_app)
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
