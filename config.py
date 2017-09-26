@@ -35,15 +35,17 @@ class Dev(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL')
 
-
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL')
 
 
 class ProductionConfig(Config):
+    @classmethod
+    def init_app(app):
+        from werkzeug.contrib.fixers import ProxyFix
+        app.wsgi_app = ProxyFix(app.wsgi_app)
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-
 
 config = {
     'development': Dev,
