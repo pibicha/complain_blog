@@ -32,6 +32,13 @@
                             <span class="label label-primary">编辑 [管理员] </span>
                         </a>
                     {% endif %}
+                    {% if user_p.can() %}
+                        <a href="{{ url_for('main.post', id=post.id) }}#comments">
+                         <span class="label label-primary">
+                         {{ post.comments.count() }} 评论
+                         </span>
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </li>

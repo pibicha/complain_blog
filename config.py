@@ -15,13 +15,16 @@ class Config:
     MAIL_SERVER = 'smtp.163.com'
     MAIL_PORT = 465
     MAIL_USE_SSL = True
-    #MAIL_USE_TLS = True 163支持
+    # MAIL_USE_TLS = True 163支持
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    # 评论pagesize
+    COMMENT_PER_PAGE = 8
     # 博客分页——每页datasize
     POSTS_PER_PAGE = 20
     # 默认分页大小
     PER_PAGE = 20
+
     # 由子类实现，类似java的模板方法，可以对app进行扩展
     @staticmethod
     def init_app(app):
@@ -40,6 +43,7 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+
 
 config = {
     'development': Dev,
