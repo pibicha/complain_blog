@@ -104,7 +104,7 @@ class User(UserMixin, db.Model):
 
     # 取消关注
     def unfollow(self, user):
-        f = self.followed.filter_by(follower_id=user.id).first()
+        f = self.followed.filter_by(followed_id=user.id).first()
         if f:
             db.session.delete(f)
 

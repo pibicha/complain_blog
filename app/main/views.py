@@ -9,6 +9,9 @@ from flask_login import login_required, current_user
 from .. import admin_permission, user_permission, Permission, UserNeed
 from flask import request
 
+from flask_principal import Principal, Identity, AnonymousIdentity, \
+    identity_changed, IdentityContext
+
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
@@ -108,3 +111,59 @@ def edit(id):
         return redirect(url_for('main.post', id=post.id))
     form.body.data = post.body
     return render_template('edit_post.html', form=form)
+
+
+# 关注
+@main.route('/follow/<username>')
+@login_required
+@user_permission.require()
+def follow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash("找不到{}哦！".format(username))
+        return redirect(url_for('.index'))
+    if current_user.is_following(user):
+        flash("你已经关注过{}啦！".format(username))
+        return redirect(url_for('main.user', username=username))
+    current_user.follow(user)
+    flash('你已关注%s.' % username)
+    return redirect(url_for('.user', username=username))
+
+
+# 取消关注
+@main.route('/unfollow/<username>')
+@login_required
+@user_permission.require()
+def unfollow(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash("找不到{}哦！".format(username))
+        return redirect(url_for('.index'))
+    current_user.unfollow(user)
+    flash('你已取消关注%s.' % username)
+    return redirect(url_for('.user', username=username))
+
+
+@main.route('/followers/<username>')
+def followers(username):
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        flash("找不到{}哦！".format(username))
+    return redirect(url_for('.index'))
+    page = request.args.get('page', 1, type=int)
+    pagination = user.followers.paginate(
+        page, per_page=current_app.config['PER_PAGE'],
+        error_out=False)
+    follows = [{'user': item.follower, 'timestamp': item.timestamp}
+               for item in pagination.items]
+    return render_template('followers.html', user=user, title="的关注者",
+                           endpoint='.followers', pagination=pagination,
+                           follows=follows)
+
+
+# 上下文处理,可以在jinja2判断是否有执行权限
+@main.app_context_processor
+def context():
+    admin = IdentityContext(admin_permission)
+    user = IdentityContext(user_permission)
+    return dict(admin_p=admin, user_p=user)
