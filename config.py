@@ -12,10 +12,11 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # flask-mail相关设置，详见https://pythonhosted.org/Flask-Mail/
-    MAIL_SERVER = 'smtp.163.com'
-    MAIL_PORT = 465
-    MAIL_USE_SSL = True
-    # MAIL_USE_TLS = True 163支持
+    MAIL_SERVER = 'smtp.gmail.com'
+    # MAIL_PORT = 465
+    # MAIL_USE_SSL = True 163支持
+    MAIL_PORT = 587
+    MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
     MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
     # 评论pagesize
@@ -35,6 +36,7 @@ class Dev(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DEV_DATABASE_URL')
 
+
 class TestingConfig(Config):
     TESTING = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('TEST_DATABASE_URL')
@@ -42,10 +44,12 @@ class TestingConfig(Config):
 
 class ProductionConfig(Config):
     @classmethod
-    def init_app(cls,app):
+    def init_app(cls, app):
         from werkzeug.contrib.fixers import ProxyFix
         app.wsgi_app = ProxyFix(app.wsgi_app)
+
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+
 
 config = {
     'development': Dev,
