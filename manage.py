@@ -3,7 +3,7 @@ import os
 from app import create_app, db
 from app.models import User, Role, Post
 from flask_script import Manager, Shell
-from flask_migrate import Migrate, MigrateCommand
+from flask_migrate import Migrate, MigrateCommand,init
 
 app = create_app(os.getenv('FLASK_CONFIG') or 'default')
 manager = Manager(app)
@@ -24,7 +24,7 @@ def deploy():
     from app.models import User
     # 把数据库迁移到最新修订版本 ,
     # 在heroku server上创建的目录、文件跟web app根本不在一个环境里。所以，db migration三条命令(init/migrate/uprade)必须在Bash里一并运行完，不能一条条运行
-    db.init()
+    init()
     migrate()
     upgrade()
     # 让所有用户都关注此用户
