@@ -19,6 +19,16 @@ manager.add_command('db', MigrateCommand)
 
 
 @manager.command
+def deploy():
+    from flask_migrate import upgrade
+    from app.models import User
+    # 把数据库迁移到最新修订版本
+    upgrade()
+    # 让所有用户都关注此用户
+    User.add_self_follows()
+
+
+@manager.command
 def test():
     """Run the unit tests."""
     import unittest
