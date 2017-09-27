@@ -50,6 +50,10 @@ def create_app(config_name):
     pagedown.init_app(app)
     misaka.init_app(app)
 
+    if config_name == 'production':
+        from flask_sslify import SSLify
+        sslify = SSLify(app)
+
     # principle权限相关
     @identity_loaded.connect_via(app)
     def on_identity_loaded(sender, identity):
