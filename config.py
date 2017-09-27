@@ -12,7 +12,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # flask-mail相关设置，详见https://pythonhosted.org/Flask-Mail/
-    MAIL_SERVER = 'smtp.gmail.com'
+    MAIL_SERVER = 'smtp.163.com'
     MAIL_PORT = 465
     MAIL_USE_SSL = True
     # MAIL_USE_TLS = True 163支持
