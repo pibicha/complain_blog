@@ -159,7 +159,7 @@ class User(UserMixin, db.Model):
         super(User, self).__init__(**kwargs)
 
         # 设置自己的是自己的粉丝
-        self.follow(self)
+        self.followed.append(Follow(followed=self))
 
         if self.email is not None and self.avatar_hash is None:
             self.avatar_hash = hashlib.md5(self.email.encode('utf-8')).hexdigest()
